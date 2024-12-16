@@ -24,11 +24,8 @@ public class ProductController(IProductBLL productBll, IWebHostEnvironment _envi
             Directory.CreateDirectory(PhotoPath);
         }
 
-        var FilePath = Path.Combine(PhotoPath, product.ProductPhoto.FileName);
-        using (var stream = new FileStream(FilePath, FileMode.Create))
-        {
-            await product.ProductPhoto.CopyToAsync(stream);
-        }
+        var FilePath = Path.Combine(PhotoPath, Guid.NewGuid().ToString());
+        System.IO.File.WriteAllBytes(FilePath, product.ProductPhoto);
 
         var model = new ProductModel()
         {
@@ -69,6 +66,16 @@ public class ProductController(IProductBLL productBll, IWebHostEnvironment _envi
             return BadRequest();
         }
         var model = productBll.GetProductByName(Name);
+        var FileBytes = System.IO.File.ReadAllBytes(model.ProductPhoto);
+        var product = new QueryProductModel()
+        {
+            Description = model.Description,
+            Id = model.Id,
+            Name = model.Name,
+            Price = model.Price,
+            UserId = model.UserId,
+            ProductPhoto = FileBytes
+        };
         return Ok(model);
     }
 

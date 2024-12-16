@@ -7,5 +7,5 @@ public class QueryProductModel
     public string Name { get; set; }
     public double Price { get; set; }
     public string Description { get; set; }
-    public IFormFile ProductPhoto { get; set; }
+    public byte[] ProductPhoto { get; set; }
 }
