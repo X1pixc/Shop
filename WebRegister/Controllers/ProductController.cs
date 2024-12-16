@@ -11,13 +11,35 @@ namespace WebRegister.Controllers;
 public class ProductController(IProductBLL productBll, IWebHostEnvironment _environment): ControllerBase
 {
     [HttpPost("/add-product")]
-    public IActionResult AddProduct([FromBody] ProductModel product)
+    public async Task<IActionResult> AddProduct([FromBody] QueryProductModel product)
     {
         if (product == null)
         {
             return BadRequest();
         }
-        productBll.AddProduct(product);
+
+        var PhotoPath = Path.Combine(_environment.WebRootPath, "ProductsPhotos");
+        if (!Directory.Exists(PhotoPath))
+        {
+            Directory.CreateDirectory(PhotoPath);
+        }
+
+        var FilePath = Path.Combine(PhotoPath, product.ProductPhoto.FileName);
+        using (var stream = new FileStream(FilePath, FileMode.Create))
+        {
+            await product.ProductPhoto.CopyToAsync(stream);
+        }
+
+        var model = new ProductModel()
+        {
+            UserId = product.UserId,
+            Description = product.Description,
+            Id = product.Id,
+            Name = product.Name,
+            Price = product.Price,
+            ProductPhoto = FilePath
+        };
+        productBll.AddProduct(model);
         return Ok();
     }
 
